@@ -1,0 +1,157 @@
+@(__context: Context)@_header(__context)
+package org.mavlink
+
+import java.nio.ByteBuffer
+
+object Parser {
+
+  /** Internal parser states. */
+  object States {
+    sealed trait State
+    case object Idle extends State
+    case object GotStx extends State
+    case object GotLength extends State
+    case object GotSeq extends State
+    case object GotSysId extends State
+    case object GotCompId extends State
+    case object GotMsgId extends State
+    case object GotCrc1 extends State
+    case object GotPayload extends State
+  }
+  
+  /** Errors that may occur while receiving data. */
+  object Errors {
+    sealed trait Error
+    case object CrcError extends Error
+    case object OverflowError extends Error
+  }
+}
+
+/**
+ * A parser to divide byte streams into mavlink packets.
+ * A parser is created with receiver and error functions and bytes are then fed into it. Once
+ * a valid packet has been received (or an error encountered), the receiver (or error) functions
+ * are called.
+ * Note that due to memory and performance issues, a received packet and payload is
+ * only guaranteed to be valid within the receiver function. After exiting the function, the
+ * underlying packet's data may be overwritten by a new packet.
+ * 
+ * @@param buffer a buffer into which the received payload is stored
+ * @@param receiver called when a valid packet has been received
+ * @@param error called when invalid data was received
+ */
+class Parser(payload: ByteBuffer, receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ => ()) {
+  import Parser._
+
+  private var state: States.State = States.Idle
+
+  private object inbound {
+    var length: Int = 0
+    var seq: Byte = 0
+    var systemId: Byte = 0
+    var componentId: Byte = 0
+    var messageId: Byte = 0
+    var crc: Crc = new Crc()
+  }
+
+  /**
+   * Parses a byte as part of an incoming MAVLink message. May result
+   * in calling receiver or error function.
+   */
+  def push(c: Byte): Unit = {
+    import States._
+
+    state match {
+      case Idle =>
+        if (c == Packet.Stx) {
+          state = GotStx
+        }
+
+      case GotStx =>
+        inbound.crc = new Crc()
+        inbound.length = (c & 0xff)
+        inbound.crc = inbound.crc.accumulate(c)
+        state = GotLength
+
+      case GotLength =>
+        inbound.seq = c;
+        inbound.crc = inbound.crc.accumulate(c)
+        state = GotSeq
+
+      case GotSeq =>
+        inbound.systemId = c
+        inbound.crc = inbound.crc.accumulate(c)
+        state = GotSysId
+
+      case GotSysId =>
+        inbound.componentId = c
+        inbound.crc = inbound.crc.accumulate(c)
+        state = GotCompId
+
+      case GotCompId =>
+        inbound.messageId = c
+        inbound.crc = inbound.crc.accumulate(c)
+        if (inbound.length == 0) {
+          state = GotPayload
+        } else {
+          state = GotMsgId
+          payload.clear()
+        }
+
+      case GotMsgId =>
+        if (!payload.hasRemaining) {
+          state = Idle
+          error(Errors.OverflowError)
+        } else {
+          payload.put(c)
+          inbound.crc = inbound.crc.accumulate(c)
+          if (payload.position >= inbound.length) {
+            state = GotPayload
+          }
+        }
+
+      case GotPayload =>
+        inbound.crc = inbound.crc.accumulate(Packet.extraCrc(inbound.messageId))
+        if (c != inbound.crc.lsb) {
+          state = Idle
+          if (c == Packet.Stx) {
+            state = GotStx
+          }
+          error(Errors.CrcError)
+        } else {
+          state = GotCrc1
+        }
+
+      case GotCrc1 =>
+        if (c != inbound.crc.msb) {
+          state = Idle
+          if (c == Packet.Stx) {
+            state = GotStx
+          }
+          error(Errors.CrcError)
+        } else {
+          val packet = Packet(
+            inbound.seq,
+            inbound.systemId,
+            inbound.componentId,
+            inbound.messageId,
+            payload)
+          state = Idle
+          receiver(packet)
+        }
+    }
+  }
+
+  /**
+   * Parses a sequence of bytes.
+   */
+  def push(bytes: Traversable[Byte]): Unit = for (b <- bytes) push(b)
+
+  /**
+   * Parses all bytes of contained in a byte buffer.
+   */
+  def push(bytes: ByteBuffer): Unit = while(bytes.hasRemaining) {
+    push(bytes.get())
+  }
+
+}

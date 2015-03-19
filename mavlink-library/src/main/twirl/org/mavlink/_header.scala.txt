@@ -1,0 +1,5 @@
+@(__context: Context)/*
+ * MAVLink Abstraction Layer for Scala.
+ *
+ * This file was automatically generated.
+ */

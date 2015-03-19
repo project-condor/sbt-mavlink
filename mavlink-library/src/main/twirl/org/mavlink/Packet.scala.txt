@@ -1,0 +1,59 @@
+@(__context: Context, __maxPayloadLength: Int, __extraCrcs: Seq[Byte])@_header(__context)
+package org.mavlink
+
+import java.nio.ByteBuffer
+
+/**
+ * Represents a MAVLink packet.
+ * Note that due to performance reasons, the packet's payload contents are mutable.
+ * @@param seq sequence number
+ * @@param systemId system ID of sender
+ * @@param componentId component ID of sender
+ * @@param messageId MAVLink message identification (this depends on the dialect used)
+ * @@param payload message contents
+ */
+case class Packet(
+  seq: Byte,
+  systemId: Byte,
+  componentId: Byte,
+  messageId: Byte,
+  payload: ByteBuffer
+) {
+
+  /*
+  def crc = {
+    var c = new Crc()
+    c = c.accumulate(payload.length.toByte)
+    c = c.accumulate(seq)
+    c = c.accumulate(systemId)
+    c = c.accumulate(componentId)
+    c = c.accumulate(messageId)
+    while (payload.)
+    for (p <- payload) {
+      c = c.accumulate(p)
+    }
+    c = c.accumulate(Packet.extraCrc(messageId))
+    c
+  }*/
+}
+
+object Packet {
+
+  /** Start byte signaling the beginning of a packet. */
+  final val Stx: Byte = (0xfe).toByte
+
+  /** Maximum length of a payload contained in a packet. */
+  final val MaxPayloadLength: Int = @__maxPayloadLength
+
+  /** Additional CRCs indexed by message ID (see MAVLink specification). */
+  final val ExtraCrcs: Seq[Byte] = Array[Byte](
+  @__extraCrcs.map(_ formatted "%3d").grouped(10).map(_.mkString(",")).mkString(",\n  ")
+  )
+  
+  /** Utility function to index ExtraCrcs with a byte. */
+  def extraCrc(id: Byte) = ExtraCrcs(id & 0xff)
+
+  /** An invalid packet with no payload. */
+  def emoty = Packet(0, 0, 0, -128, ByteBuffer.wrap(Array(0: Byte)))
+
+}

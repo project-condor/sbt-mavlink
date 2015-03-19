@@ -1,0 +1,120 @@
+@(__context: Context, __messages: Set[Message])@org.mavlink.txt._header(__context)
+package org.mavlink.messages
+
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+
+@__scalaMessageType(message: Message) = {@StringUtils.Camelify(message.name)}
+
+@__scalaFieldName(field: Field) = {@StringUtils.camelify(field.name)}
+
+@__scalaFieldType(tpe: Type) = {@tpe match {
+  case IntType(1, _) => {Byte}
+  case IntType(2, _) => {Short}
+  case IntType(4, _) => {Int}
+  case IntType(8, _) => {Long}
+  case FloatType(4) => {Float}
+  case FloatType(8) => {Double}
+  case StringType(_) => {String}
+  case ArrayType(underlying, _) => {Seq[@__scalaFieldType(underlying)]}
+}}
+@__scalaFieldFormal(field: Field) = {@__scalaFieldName(field): @__scalaFieldType(field.tpe)}
+
+@__bufferReadMethod(buffer: String, tpe: Type) = {@tpe match {
+  case IntType(1, _) => {@{buffer}.get()}
+  case IntType(2, _) => {@{buffer}.getShort()}
+  case IntType(4, _) => {@{buffer}.getInt()}
+  case IntType(8, _) => {@{buffer}.getLong()}
+  case FloatType(4) => {@{buffer}.getFloat()}
+  case FloatType(8) => {@{buffer}.getDouble()}
+  case StringType(maxLength) =>{{
+    val bytes = Array[Byte](@maxLength)
+    @{buffer}.get(bytes, 0, @maxLength)
+    val length = bytes.indexOf(0) match {
+      case -1 => @maxLength
+      case i => i
+    }
+    new String(bytes, 0, length, Charset.forName("UTF-8"))
+  }}  
+  case ArrayType(underlying, length) => {for (i <- 0 until @length) yield {@__bufferReadMethod(buffer, underlying)}}
+}}
+@__bufferWriteMethod(buffer: String, data: String, tpe: Type) = {@tpe match {
+  case IntType(1, _) => {@{buffer}.put(@data)}
+  case IntType(2, _) => {@{buffer}.putShort(@data)}
+  case IntType(4, _) => {@{buffer}.putInt(@data)}
+  case IntType(8, _) => {@{buffer}.putLong(@data)}
+  case FloatType(4) => {@{buffer}.putFloat(@data)}
+  case FloatType(8) => {@{buffer}.putDouble(@data)}
+  case StringType(maxLength) => {
+  {
+    val bytes = @{data}.getBytes(Charset.forName("UTF-8"))
+    val endPosition = @{buffer}.position + @maxLength
+    @{buffer}.put(bytes, 0, math.max(bytes.length, @maxLength))
+    while (@{buffer}.position < endPosition) {
+      @{buffer}.put(0: Byte)
+    }
+  }}  
+  case ArrayType(underlying, length) => {for (i <- 0 until @length) {@__bufferWriteMethod(buffer, data + "(i)", underlying)}}
+}}
+
+@__commentParagraphs(paragraphs:  Seq[String]) = {@paragraphs.mkString("/**\n * ", "\n * ", "\n */")}
+@__comment(message: Message) = {@__commentParagraphs(message.description.grouped(100).toList ++ message.fields.map(field => "@param " + field.name + " " + field.description))}
+
+/** Marker trait for MAVLink messages. All supported messages extend this trait. */
+sealed trait Message
+
+@for(__msg <- __messages) {
+@__comment(__msg)
+case class @{__scalaMessageType(__msg)}(@__msg.fields.map(__scalaFieldFormal).mkString(", ")) extends Message
+}
+
+/**
+ * Wraps an unknown message.
+ * @@param id the ID of the message
+ * @@param payload the message's contents
+ */
+case class Unknown(id: Byte, payload: ByteBuffer) extends Message
+
+/**
+ * Provides utility methods for converting data to and from MAVLink messages.
+ */
+object Message {
+
+  /**
+   * Interprets an ID and payload as a message. The contents must be ordered
+   * according to the MAVLink specification.
+   * Note: this method reads from the provided ByteBuffer and thereby modifies its
+   * internal state.
+   * @@param id ID of the message
+   * @@param payload contents of the message
+   * @@return payload interpreted as a message or 'Unknown' in case of an unknown ID
+   */
+  def unpack(id: Byte, payload: ByteBuffer): Message = id match {
+    @for(__msg <- __messages) {
+      case @__msg.id =>
+        @for(__field <- __msg.orderedFields) {val @__scalaFieldFormal(__field) = @__bufferReadMethod("payload", __field.tpe)
+        }
+        @{__scalaMessageType(__msg)}(@__msg.fields.map(__scalaFieldName(_)).mkString(", "))
+    }
+      case u => Unknown(u, payload)
+  }
+
+  /**
+   * Writes the contents of a message to a ByteBuffer. The message is encoded according
+   * to the MAVLink specification.
+   * @@param message the message to write
+   * @@param payload buffer that will hold the encoded message
+   * @@return id of the encoded message
+   */
+  def pack(message: Message, payload: ByteBuffer): Byte = message match {
+    @for(__msg <- __messages) {
+      case m: @__scalaMessageType(__msg) =>
+        @for(__field <- __msg.orderedFields) {@__bufferWriteMethod("payload", "m." + __scalaFieldName(__field), __field.tpe)
+        }
+        @__msg.id
+    }
+    case u: Unknown =>
+      payload.put(u.payload)
+      u.id
+  }
+}
