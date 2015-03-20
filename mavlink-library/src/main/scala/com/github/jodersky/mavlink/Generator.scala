@@ -3,7 +3,6 @@ package com.github.jodersky.mavlink
 import scala.xml.XML
 import java.io.FileWriter
 import java.io.BufferedWriter
-import scalax.file.Path
 import java.io.File
 
 import trees._

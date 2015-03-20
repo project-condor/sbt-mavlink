@@ -23,7 +23,6 @@ object ApplicationBuild extends Build {
     enablePlugins(SbtTwirl)
     settings(common: _*)
     settings(
-      libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2",
       TwirlKeys.templateImports += "com.github.jodersky.mavlink._",
       TwirlKeys.templateImports += "com.github.jodersky.mavlink.trees._"
     )
