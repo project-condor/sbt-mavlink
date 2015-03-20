@@ -11,7 +11,7 @@ object ApplicationBuild extends Build {
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
     version := "0.1-SNAPSHOT"
-  )
+  ) ++ publishSettings
 
   lazy val root = (
     Project("root", file("."))
@@ -49,6 +49,32 @@ object ApplicationBuild extends Build {
       publishLocal <<= publishLocal.dependsOn(publishLocal in library)
     )
     dependsOn(library)
+  )
+  
+  lazy val publishSettings: Seq[Setting[_]] = Seq(
+    licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0"))),
+    homepage := Some(url("http://github.com/jodersky/sbt-mavlink")),
+    publishMavenStyle := true,
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (isSnapshot.value)
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+    pomIncludeRepository := { _ => false },
+    pomExtra := {
+      <scm>
+        <url>git@github.com:jodersky/sbt-mavlink.git</url>
+        <connection>scm:git:git@github.com:jodersky/sbt-mavlink.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>jodersky</id>
+          <name>Jakob Odersky</name>
+        </developer>
+      </developers>
+    }
   )
 
 }
