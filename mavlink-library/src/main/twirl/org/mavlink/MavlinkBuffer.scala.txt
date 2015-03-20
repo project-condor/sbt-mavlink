@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /** Utility functions for using ByteBuffers. */
-class MavlinkBuffer {
+object MavlinkBuffer {
 
   /**
    * Allocates a ByteBuffer for using in MAVLink message processing.

@@ -40,7 +40,7 @@ object Parser {
  * @@param receiver called when a valid packet has been received
  * @@param error called when invalid data was received
  */
-class Parser(payload: ByteBuffer, receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ => ()) {
+class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ => ()) {
   import Parser._
 
   private var state: States.State = States.Idle

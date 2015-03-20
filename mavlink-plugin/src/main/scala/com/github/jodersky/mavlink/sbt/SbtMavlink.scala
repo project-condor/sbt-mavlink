@@ -16,14 +16,14 @@ object SbtMavlink extends AutoPlugin {
   override def requires = JvmPlugin //this is required as sourceGenerators are otherwise reset
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
-    mavlinkDialect in Compile := (baseDirectory in Compile).value / "conf" / "mavlink.xml",
-    mavlinkTarget in Compile := (sourceManaged in Compile).value,
-    mavlinkGenerate in Compile := generationTask.value,
-    sourceGenerators in Compile += (mavlinkGenerate in Compile).taskValue
+    mavlinkDialect := baseDirectory.value / "conf" / "mavlink.xml",
+    mavlinkTarget := sourceManaged.value,
+    mavlinkGenerate := generationTask.value,
+    sourceGenerators in Compile += mavlinkGenerate.taskValue
   )
 
   lazy val generationTask = Def.task[Seq[File]] {
-    val dialectDefinitionFile = (mavlinkDialect in Compile).value
+    val dialectDefinitionFile = mavlinkDialect.value
 
     if (!dialectDefinitionFile.exists) sys.error(
       "Dialect definition " + dialectDefinitionFile.getAbsolutePath + " does not exist."
@@ -33,13 +33,13 @@ object SbtMavlink extends AutoPlugin {
     val dialect = Parser.parseDialect(dialectDefinition)
     val pathToSource = (new Generator(dialect)).generate()
 
-    val outDirectory = (mavlinkTarget in Compile).value
+    val outDirectory = mavlinkTarget.value
 
     streams.value.log.info("Generating mavlink files...")
 
     val files = for ((path, source) <- pathToSource) yield {
-      streams.value.log.debug("Generating " + path)
       val file = outDirectory / path
+      streams.value.log.info("Generating " + file)
       IO.write(file, source)
       file.getAbsoluteFile
     }

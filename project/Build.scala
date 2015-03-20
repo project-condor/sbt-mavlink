@@ -2,6 +2,7 @@ import sbt._
 import sbt.Keys._
 import play.twirl.sbt.SbtTwirl
 import play.twirl.sbt.Import._
+import sbt.ScriptedPlugin._
 
 object ApplicationBuild extends Build {
 
@@ -31,9 +32,15 @@ object ApplicationBuild extends Build {
   lazy val plugin = (
     Project("mavlink-plugin", file("mavlink-plugin"))
     settings(common: _*)
+    settings(ScriptedPlugin.scriptedSettings: _*)
     settings(
       sbtPlugin := true,
-      name := "sbt-mavlink"
+      name := "sbt-mavlink",
+      scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+        Seq("-Xmx1024M", "-XX:MaxPermSize=256M", "-Dplugin.version=" + version.value)
+      },
+      scriptedBufferLog := false,
+      publishLocal <<= publishLocal.dependsOn(publishLocal in library)
     )
     dependsOn(library)
   )

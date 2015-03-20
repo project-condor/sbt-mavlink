@@ -10,12 +10,12 @@ project/boot/
 project/plugins/project/
 
 # scala-ide specific
-/.settings
-/.scala_dependencies
-/.project
-/.classpath
-/.cache
-/.history
+.settings
+.scala_dependencies
+.project
+.classpath
+.cache
+.history
 
 # ensime
 .ensime

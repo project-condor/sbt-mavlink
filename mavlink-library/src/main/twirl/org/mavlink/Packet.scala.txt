@@ -20,21 +20,33 @@ case class Packet(
   payload: ByteBuffer
 ) {
 
-  /*
-  def crc = {
+  lazy val crc = {
     var c = new Crc()
-    c = c.accumulate(payload.length.toByte)
+    c = c.accumulate(payload.remaining.toByte)
     c = c.accumulate(seq)
     c = c.accumulate(systemId)
     c = c.accumulate(componentId)
     c = c.accumulate(messageId)
-    while (payload.)
-    for (p <- payload) {
-      c = c.accumulate(p)
+    while (payload.hasRemaining) {
+      c = c.accumulate(payload.get())
     }
     c = c.accumulate(Packet.extraCrc(messageId))
     c
-  }*/
+  }
+
+  def writeTo(out: Array[Byte], offset: Int = 0): Unit = {
+    out(offset) = Packet.Stx
+    out(offset+1) = payload.remaining.toByte
+    out(offset+2) = seq
+    out(offset+3) = systemId
+    out(offset+4) = componentId
+    out(offset+5) = messageId
+    val r = payload.remaining()
+    payload.get(out, 0, out.length)
+    out(offset + r) = crc.lsb
+    out(offset + r + 1) = crc.msb
+  }
+
 }
 
 object Packet {
@@ -44,6 +56,9 @@ object Packet {
 
   /** Maximum length of a payload contained in a packet. */
   final val MaxPayloadLength: Int = @__maxPayloadLength
+
+  /** Maximum over-the-wire size of a packet, i.e. the maximum payload length plus header and footer data. */
+  final val MaxPacketLength: Int = MaxPayloadLength + 8
 
   /** Additional CRCs indexed by message ID (see MAVLink specification). */
   final val ExtraCrcs: Seq[Byte] = Array[Byte](

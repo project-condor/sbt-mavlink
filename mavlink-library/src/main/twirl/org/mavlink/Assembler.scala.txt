@@ -15,5 +15,5 @@ class Assembler(systemId: Byte, componentId: Byte) {
     val p = Packet(seq.toByte, systemId, componentId, messageId, payload)
     seq += 1
     p
-  }	
+  }
 }

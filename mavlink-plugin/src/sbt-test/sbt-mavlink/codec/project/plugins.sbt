@@ -1,0 +1,1 @@
+addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % sys.props("plugin.version"))
