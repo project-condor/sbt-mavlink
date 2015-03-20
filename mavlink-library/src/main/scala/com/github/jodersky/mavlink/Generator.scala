@@ -31,7 +31,6 @@ class Generator(dialect: Dialect) {
     List(
       "org/mavlink/Assembler.scala" -> org.mavlink.txt.Assembler(context).body,
       "org/mavlink/Crc.scala" -> org.mavlink.txt.Crc(context).body,
-      "org/mavlink/MavlinkBuffer.scala" -> org.mavlink.txt.MavlinkBuffer(context).body,
       "org/mavlink/Packet.scala" -> org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body,
       "org/mavlink/Parser.scala" -> org.mavlink.txt.Parser(context).body,
       "org/mavlink/messages/messages.scala" -> org.mavlink.messages.txt.messages(context, dialect.messages).body
