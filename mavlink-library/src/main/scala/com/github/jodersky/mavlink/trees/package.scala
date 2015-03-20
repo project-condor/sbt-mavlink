@@ -10,6 +10,7 @@ package trees {
   case class Field(tpe: Type, nativeType: String, name: String, enum: Option[String], description: String) extends Tree
   case class Message(id: Byte, name: String, description: String, fields: Seq[Field]) extends Tree {
     def orderedFields = fields.toSeq.sortBy(_.tpe.width)(Ordering[Int].reverse)
+    def length = fields.map(_.tpe.sizeof).sum
 
     lazy val checksum = {
       var c = new Crc()

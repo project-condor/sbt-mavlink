@@ -1,8 +1,6 @@
 @(__context: Context)@_header(__context)
 package org.mavlink
 
-import java.nio.ByteBuffer
-
 /**
  * Utility class for assembling packets with increasing sequence number
  * originating from given system and component IDs.
@@ -11,7 +9,7 @@ class Assembler(systemId: Byte, componentId: Byte) {
   private var seq = 0;
 
   /** Assemble a given message ID and payload into a packet. */
-  def assemble(messageId: Byte, payload: ByteBuffer): Packet = {
+  def assemble(messageId: Byte, payload: Array[Byte]): Packet = {
     val p = Packet(seq.toByte, systemId, componentId, messageId, payload)
     seq += 1
     p

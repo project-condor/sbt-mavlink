@@ -1,7 +1,7 @@
 @(__context: Context, __maxPayloadLength: Int, __extraCrcs: Seq[Byte])@_header(__context)
 package org.mavlink
 
-import java.nio.ByteBuffer
+import scala.collection.mutable.ArrayBuilder
 
 /**
  * Represents a MAVLink packet.
@@ -17,34 +17,33 @@ case class Packet(
   systemId: Byte,
   componentId: Byte,
   messageId: Byte,
-  payload: ByteBuffer
+  payload: Array[Byte]
 ) {
 
   lazy val crc = {
     var c = new Crc()
-    c = c.accumulate(payload.remaining.toByte)
+    c = c.accumulate(payload.length.toByte)
     c = c.accumulate(seq)
     c = c.accumulate(systemId)
     c = c.accumulate(componentId)
     c = c.accumulate(messageId)
-    while (payload.hasRemaining) {
-      c = c.accumulate(payload.get())
-    }
+    for (b <- payload) c = c.accumulate(b)
     c = c.accumulate(Packet.extraCrc(messageId))
     c
   }
 
-  def writeTo(out: Array[Byte], offset: Int = 0): Unit = {
-    out(offset) = Packet.Stx
-    out(offset+1) = payload.remaining.toByte
-    out(offset+2) = seq
-    out(offset+3) = systemId
-    out(offset+4) = componentId
-    out(offset+5) = messageId
-    val r = payload.remaining()
-    payload.get(out, 0, out.length)
-    out(offset + r) = crc.lsb
-    out(offset + r + 1) = crc.msb
+  val toArray = {
+    val builder = ArrayBuilder.make[Byte]
+    builder += Packet.Stx
+    builder += payload.length.toByte
+    builder += seq
+    builder += systemId
+    builder += componentId
+    builder += messageId
+    builder ++= payload
+    builder += crc.lsb
+    builder += crc.msb
+    builder.result
   }
 
 }
@@ -57,9 +56,6 @@ object Packet {
   /** Maximum length of a payload contained in a packet. */
   final val MaxPayloadLength: Int = @__maxPayloadLength
 
-  /** Maximum over-the-wire size of a packet, i.e. the maximum payload length plus header and footer data. */
-  final val MaxPacketLength: Int = MaxPayloadLength + 8
-
   /** Additional CRCs indexed by message ID (see MAVLink specification). */
   final val ExtraCrcs: Seq[Byte] = Array[Byte](
   @__extraCrcs.map(_ formatted "%3d").grouped(10).map(_.mkString(",")).mkString(",\n  ")
@@ -69,6 +65,6 @@ object Packet {
   def extraCrc(id: Byte) = ExtraCrcs(id & 0xff)
 
   /** An invalid packet with no payload. */
-  def emoty = Packet(0, 0, 0, -128, ByteBuffer.wrap(Array(0: Byte)))
+  def empty = Packet(0, 0, 0, -128, Array(0: Byte))
 
 }

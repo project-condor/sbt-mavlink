@@ -14,12 +14,7 @@ import trees._
  */
 class Generator(dialect: Dialect) {
   
-  lazy val maxPayloadLength = {
-    val widths = dialect.messages map { msg =>
-      msg.fields.map(_.tpe.sizeof).sum
-    }
-    widths.max
-  }
+  lazy val maxPayloadLength = dialect.messages.map(_.length).max
 
   lazy val extraCrcs = Array.tabulate[Byte](255){i =>
     val message = dialect.messages.find(_.id == i)

@@ -9,45 +9,38 @@ object Main {
   val ReceiverComponentId = 0: Byte
 
   def main(args: Array[String]): Unit = {
+  	println("Echo test")
 	echoTest()
   }
 
   def echoTest() = {
-  	//represents the line buffer, i.e. all data going in and out
-  	val line = new Array[Byte](Packet.MaxPacketLength)
-
-  	//payload of incoming messages
-  	val in = MavlinkBuffer.allocate()
 
   	//parser to transform an incoming byte stream into packets
-  	val parser = new Parser(in)(
-  	  pckt => {
-  	    val msg = Message.unpack(pckt.messageId, pckt.payload)
+  	val parser = new Parser(
+  	  (pckt: Packet) => {
+  	    val msg: Message = Message.unpack(pckt.messageId, pckt.payload)
   	    println("received message: " + msg)
   	  },
-  	  err => {
+  	  (err: Parser.Errors.Error) => {
   	  	sys.error("parse error: " + err)
   	  }
   	)
 
-  	//payload buffer of outgoing messages
-  	val out = MavlinkBuffer.allocate()
-
-  	//assembles messages into pakets from a specific sender
+  	//assembles messages into packets from a specific sender
   	val assembler = new Assembler(SenderSystemId, SenderComponentId)
 
   	//create an explicit message
   	val message = Heartbeat(0)
 
   	//pack the message into a payload
-  	val id = Message.pack(message, out)
+  	val (id: Byte, payload: Array[Byte]) = Message.pack(message)
 
   	//assemble into packet
-  	val packet = assembler.assemble(id, out)
+  	val packet = assembler.assemble(id, payload)
 
   	//simulate wire transfer
-  	packet.writeTo(line)
-  	parser.push(line)
+  	val data = packet.toArray
+  	parser.push(data)
   }
 
 }

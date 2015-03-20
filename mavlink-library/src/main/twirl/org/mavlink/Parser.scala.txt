@@ -1,7 +1,7 @@
 @(__context: Context)@_header(__context)
 package org.mavlink
 
-import java.nio.ByteBuffer
+import scala.collection.mutable.ArrayBuilder
 
 object Parser {
 
@@ -32,15 +32,11 @@ object Parser {
  * A parser is created with receiver and error functions and bytes are then fed into it. Once
  * a valid packet has been received (or an error encountered), the receiver (or error) functions
  * are called.
- * Note that due to memory and performance issues, a received packet and payload is
- * only guaranteed to be valid within the receiver function. After exiting the function, the
- * underlying packet's data may be overwritten by a new packet.
  * 
- * @@param buffer a buffer into which the received payload is stored
  * @@param receiver called when a valid packet has been received
  * @@param error called when invalid data was received
  */
-class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ => ()) {
+class Parser(receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ => ()) {
   import Parser._
 
   private var state: States.State = States.Idle
@@ -51,6 +47,8 @@ class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors
     var systemId: Byte = 0
     var componentId: Byte = 0
     var messageId: Byte = 0
+    var currentLength: Int = 0
+    val payload = ArrayBuilder.make[Byte]
     var crc: Crc = new Crc()
   }
 
@@ -95,19 +93,19 @@ class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors
           state = GotPayload
         } else {
           state = GotMsgId
-          payload.clear()
+          inbound.payload.clear()
+          inbound.currentLength = 0
         }
 
       case GotMsgId =>
-        if (!payload.hasRemaining) {
+        inbound.payload += c
+        inbound.currentLength += 1
+        inbound.crc = inbound.crc.accumulate(c)
+        if(inbound.currentLength >= Packet.MaxPayloadLength) {
           state = Idle
           error(Errors.OverflowError)
-        } else {
-          payload.put(c)
-          inbound.crc = inbound.crc.accumulate(c)
-          if (payload.position >= inbound.length) {
-            state = GotPayload
-          }
+        } else if (inbound.currentLength>= inbound.length) {
+          state = GotPayload
         }
 
       case GotPayload =>
@@ -135,7 +133,7 @@ class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors
             inbound.systemId,
             inbound.componentId,
             inbound.messageId,
-            payload)
+            inbound.payload.result)
           state = Idle
           receiver(packet)
         }
@@ -146,12 +144,5 @@ class Parser(payload: ByteBuffer)(receiver: Packet => Unit, error: Parser.Errors
    * Parses a sequence of bytes.
    */
   def push(bytes: Traversable[Byte]): Unit = for (b <- bytes) push(b)
-
-  /**
-   * Parses all bytes of contained in a byte buffer.
-   */
-  def push(bytes: ByteBuffer): Unit = while(bytes.hasRemaining) {
-    push(bytes.get())
-  }
 
 }

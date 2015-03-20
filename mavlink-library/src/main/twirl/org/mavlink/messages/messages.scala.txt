@@ -73,7 +73,7 @@ case class @{__scalaMessageType(__msg)}(@__msg.fields.map(__scalaFieldFormal).mk
  * @@param id the ID of the message
  * @@param payload the message's contents
  */
-case class Unknown(id: Byte, payload: ByteBuffer) extends Message
+case class Unknown(id: Byte, payload: Array[Byte]) extends Message
 
 /**
  * Provides utility methods for converting data to and from MAVLink messages.
@@ -83,38 +83,39 @@ object Message {
   /**
    * Interprets an ID and payload as a message. The contents must be ordered
    * according to the MAVLink specification.
-   * Note: this method reads from the provided ByteBuffer and thereby modifies its
-   * internal state.
    * @@param id ID of the message
    * @@param payload contents of the message
    * @@return payload interpreted as a message or 'Unknown' in case of an unknown ID
    */
-  def unpack(id: Byte, payload: ByteBuffer): Message = id match {
+  def unpack(id: Byte, payload: Array[Byte]): Message = {
+    val buffer = ByteBuffer.wrap(payload)
+    id match {
     @for(__msg <- __messages) {
       case @__msg.id =>
-        @for(__field <- __msg.orderedFields) {val @__scalaFieldFormal(__field) = @__bufferReadMethod("payload", __field.tpe)
+        @for(__field <- __msg.orderedFields) {val @__scalaFieldFormal(__field) = @__bufferReadMethod("buffer", __field.tpe)
         }
         @{__scalaMessageType(__msg)}(@__msg.fields.map(__scalaFieldName(_)).mkString(", "))
     }
       case u => Unknown(u, payload)
+    }
   }
 
   /**
-   * Writes the contents of a message to a ByteBuffer. The message is encoded according
-   * to the MAVLink specification.
+   * Encodes a message according to the MAVLink specification.
    * @@param message the message to write
-   * @@param payload buffer that will hold the encoded message
-   * @@return id of the encoded message
+   * @@return (id, payload) id and payload of the encoded message
    */
-  def pack(message: Message, payload: ByteBuffer): Byte = message match {
+  def pack(message: Message): (Byte, Array[Byte]) = message match {
     @for(__msg <- __messages) {
       case m: @__scalaMessageType(__msg) =>
-        @for(__field <- __msg.orderedFields) {@__bufferWriteMethod("payload", "m." + __scalaFieldName(__field), __field.tpe)
+        val arr = new Array[Byte](@__msg.length)
+        val buffer = ByteBuffer.wrap(arr)
+
+        @for(__field <- __msg.orderedFields) {@__bufferWriteMethod("buffer", "m." + __scalaFieldName(__field), __field.tpe)
         }
-        @__msg.id
+        (@__msg.id, arr)
     }
     case u: Unknown =>
-      payload.put(u.payload)
-      u.id
+      (u.id, u.payload)
   }
 }
