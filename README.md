@@ -4,10 +4,89 @@ This plugin provides generation of Scala sources from MAVLink message definition
 It translates a MAVLink dialect defined in XML to useable scala objects and provides utilities for parsing
 and creating MAVLink packets.
 
-See an example 
+## Generated Code
+
+### General
+The generated code is in general used as the following examples illustrates.
+
+```scala
+import org.mavlink._
+
+//parser to transform an incoming byte stream into packets
+val parser = new Parser(
+  (pckt: Packet) => {
+    val msg: Message = Message.unpack(pckt.messageId, pckt.payload)
+  	println("received message: " + msg)
+  },
+  (err: Parser.Errors.Error) => {
+    sys.error("parse error: " + err)
+  }
+)
+
+//assembles messages into packets from a specific sender
+val assembler = new Assembler(SenderSystemId, SenderComponentId)
+
+//create an explicit message
+val message = Heartbeat(0)
+
+//pack the message into a payload
+val (id: Byte, payload: Array[Byte]) = Message.pack(message)
+
+//assemble into packet
+val packet = assembler.assemble(id, payload)
+
+//simulate wire transfer
+val data = packet.toArray
+parser.push(data)
+```
+
+The concrete message implementations are generated according to the selected dialect (see section Keys).
+
+### Types
+Every message is mapped to a Scala case class, its name converted to CamelCase. The fields of
+the case class correspond to the fields defined in the dialect definition (names are converted to camelCase).
+
+Field types are mapped according to the following table
+
+| Definition Type			| Scala Type            |
+| ------------------------- | --------------------- |
+| int8_t / uint8_t / char	| Byte                  |
+| in16_t / uint16_t			| Short                 |
+| int32_t / uint32_t		| Int                   |
+| int64_t / uint64_t		| Long                  |
+| float						| Float                 |
+| double					| Double                |
+| char[]					| String                |
+| &lt;type&gt;[]			| Array[&lt;type&gt;]   |
+
+*Note that since Scala only supports unsigned integer types, it is up to the client to
+interpret the values of fields correctly.*
 
 ## Usage
 Add the following to your plugins:
 
-    addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.1")
+ ```scala
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.1")`
+ ```
+
+Set a MAVLink dialect
+ ```scala
+ mavlinkDialect := (baseDirectory in ThisBuild).value / "mavlink" / "dialect.xml"
+ ```
+
+Compile your project.
+
+## Keys
+All keys are defined in ```com.github.jodersky.mavlink.sbt.MavlinkKeys```
+
+ -  ```mavlinkDialect``` - [Setting] - Specifies the location of the MAVLink dialect definition for which to generate Scala code.
+ -  ```mavlinkGenerate``` - [Task] - Generates Scala code to interoperate with MAVLink. In a standard project using this plugin this
+    task is added to ```sourceGenerators```, i.e. it is automatically called before compiling.
+
+ - ```mavlinkTarget``` - [Setting] - Output directory of generated Scala sources. This should be within ```sourceManaged```.
+
+## Limitations
+  - Enums are not used, instead their corresponding integer value is substituted
+
+## Credits
 
