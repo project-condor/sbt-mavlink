@@ -103,13 +103,13 @@
 			<field type="uint16_t" name="rxerrors">receive errors</field>
 			<field type="uint16_t" name="fixed">count of error corrected packets</field>
 		</message>
-		<message name="TEST_MESSAGE" id="110">
+		<message name="TEST_MESSAGE" id="254">
 			<description>Test</description>
-			<field type="uint8_t[2]" name="bytearray">a byte array</field>
-			<field type="float[20]" name="floatarray">a float array</field>
-			<field type="char" name="chars">a char</field>
-			<field type="double" name="doubles">a double</field>
-			<field type="char[20]" name="strings">a string</field>
+			<field type="uint16_t[2]" name="test_short_array">a byte array</field>
+			<field type="float[20]" name="test_float_array">a float array</field>
+			<field type="uint8_t" name="test_byte">a byte</field>
+			<field type="double" name="test_double">a double</field>
+			<field type="char[20]" name="test_string">a string</field>
 		</message>
 	</messages>
 </mavlink>

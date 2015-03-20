@@ -101,10 +101,10 @@ class Parser(receiver: Packet => Unit, error: Parser.Errors.Error => Unit = _ =>
         inbound.payload += c
         inbound.currentLength += 1
         inbound.crc = inbound.crc.accumulate(c)
-        if(inbound.currentLength >= Packet.MaxPayloadLength) {
+        if(inbound.currentLength > Packet.MaxPayloadLength) {
           state = Idle
           error(Errors.OverflowError)
-        } else if (inbound.currentLength>= inbound.length) {
+        } else if (inbound.currentLength >= inbound.length) {
           state = GotPayload
         }
 

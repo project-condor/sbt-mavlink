@@ -30,7 +30,13 @@ object Main {
   	val assembler = new Assembler(SenderSystemId, SenderComponentId)
 
   	//create an explicit message
-  	val message = Heartbeat(0)
+  	val message = TestMessage(
+  	  Array[Short](1,2),
+  	  Array.fill[Float](20)(0.2f),
+  	  3: Byte,
+  	  42.0,
+  	  "hello world"
+  	)
 
   	//pack the message into a payload
   	val (id: Byte, payload: Array[Byte]) = Message.pack(message)
@@ -42,5 +48,5 @@ object Main {
   	val data = packet.toArray
   	parser.push(data)
   }
-
+  
 }

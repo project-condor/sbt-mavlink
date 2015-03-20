@@ -28,7 +28,7 @@ import java.nio.charset.Charset
   case FloatType(4) => {@{buffer}.getFloat()}
   case FloatType(8) => {@{buffer}.getDouble()}
   case StringType(maxLength) =>{{
-    val bytes = Array[Byte](@maxLength)
+    val bytes = new Array[Byte](@maxLength)
     @{buffer}.get(bytes, 0, @maxLength)
     val length = bytes.indexOf(0) match {
       case -1 => @maxLength
@@ -49,7 +49,7 @@ import java.nio.charset.Charset
   {
     val bytes = @{data}.getBytes(Charset.forName("UTF-8"))
     val endPosition = @{buffer}.position + @maxLength
-    @{buffer}.put(bytes, 0, math.max(bytes.length, @maxLength))
+    @{buffer}.put(bytes, 0, math.min(bytes.length, @maxLength))
     while (@{buffer}.position < endPosition) {
       @{buffer}.put(0: Byte)
     }
