@@ -13,9 +13,16 @@ object ApplicationBuild extends Build {
     version := "0.1-SNAPSHOT"
   )
 
-  lazy val root = Project("root", file(".")).aggregate(
-    library,
-    plugin
+  lazy val root = (
+    Project("root", file("."))
+    aggregate(
+      library,
+      plugin
+    )
+    settings(
+      publish := (),
+      publishLocal := ()
+    )
   )
 
   lazy val library = (
