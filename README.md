@@ -66,7 +66,7 @@ interpret the values of fields correctly.*
 Add the following to your plugins:
 
  ```scala
- addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.1")`
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.2")`
  ```
 
 Set a MAVLink dialect

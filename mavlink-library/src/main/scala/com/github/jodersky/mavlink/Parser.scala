@@ -2,7 +2,11 @@ package com.github.jodersky.mavlink
 
 import scala.language.postfixOps
 
+import scala.xml.Attribute
+import scala.xml.Elem
 import scala.xml.Node
+import scala.xml.Null
+import scala.xml.Text
 import scala.util.Try
 
 import trees._
@@ -11,10 +15,8 @@ import trees._
  * Provides means to parse a MAVLink dialect definition into a
  * scala object representation.
  */
-object Parser {
-
-  def fatal(error: String, node: Node) = throw new ParseError("Parse error at " + node + ": " + error)
-  def warn(warning: String, node: Node) = Console.err.println("Warning " + node + ": " + warning)
+class Parser(reporter: Reporter) {
+  import reporter._
 
   def parseDialect(node: Node): Dialect = parse(node) match {
     case p: Dialect => p
@@ -42,8 +44,17 @@ object Parser {
 
     case <enum>{_*}</enum> =>
       val name = (node \ "@name").map(_.text).headOption getOrElse fatal("no name defined for enum", node)
-      val entries = (node \ "entry").toSet map { n: Node =>
-        parse(n) match {
+      val entries = (node \ "entry").zipWithIndex map { case (n, i) =>
+
+        //FIXME: some official MAVLink dialects don't define values in enums
+        val nodeWithValue = if ((n \ "@value").isEmpty) {
+          warn("no value defined for enum entry, using index instead", n)
+          n.asInstanceOf[Elem] % Attribute(None, "value", Text(i.toString), Null)
+        } else {
+          n
+        }
+
+        parse(nodeWithValue) match {
           case e: EnumEntry => e
           case _ => fatal("illegal definition in enum, only entries are allowed", n)
         }
@@ -92,6 +103,7 @@ object Parser {
   val ArrayPattern = """(.*)\[(\d+)\]""".r
   def parseType(typeStr: String, node: Node): Type = typeStr match {
     case "int8_t" => IntType(1, true)
+    case "uint8_t_mavlink_version" => IntType(1, false)
     case "int16_t" => IntType(2, true)
     case "int32_t" => IntType(4, true)
     case "int64_t" => IntType(8, true)

@@ -1,13 +1,16 @@
 package com.github.jodersky.mavlink.sbt
 
-import com.github.jodersky.mavlink.Parser
-import com.github.jodersky.mavlink.Generator
-import scala.xml.XML
-
 import MavlinkKeys._
+
+import com.github.jodersky.mavlink.Generator
+import com.github.jodersky.mavlink.Parser
+import com.github.jodersky.mavlink.Reporter
+
 import sbt._
 import sbt.Keys._
 import sbt.plugins._
+
+import scala.xml.XML
 
 object SbtMavlink extends AutoPlugin {
 
@@ -29,8 +32,12 @@ object SbtMavlink extends AutoPlugin {
       "Dialect definition " + dialectDefinitionFile.getAbsolutePath + " does not exist."
     )
 
+    val reporter = new Reporter {
+      def printWarning(msg: String) = streams.value.log.warn(msg)
+    }
+
     val dialectDefinition = XML.loadFile(dialectDefinitionFile)
-    val dialect = Parser.parseDialect(dialectDefinition)
+    val dialect = (new Parser(reporter)).parseDialect(dialectDefinition)
     val pathToSource = (new Generator(dialect)).generate()
 
     val outDirectory = mavlinkTarget.value
