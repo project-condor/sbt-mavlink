@@ -27,6 +27,7 @@ object SbtMavlink extends AutoPlugin {
 
   lazy val generationTask = Def.task[Seq[File]] {
     val dialectDefinitionFile = mavlinkDialect.value
+    val outDirectory = mavlinkTarget.value
 
     if (!dialectDefinitionFile.exists) sys.error(
       "Dialect definition " + dialectDefinitionFile.getAbsolutePath + " does not exist."
@@ -36,23 +37,24 @@ object SbtMavlink extends AutoPlugin {
       def printWarning(msg: String) = streams.value.log.warn(msg)
     }
 
-    val dialectDefinition = XML.loadFile(dialectDefinitionFile)
-    val dialect = (new Parser(reporter)).parseDialect(dialectDefinition)
-    val targets = (new Generator(dialect)).targets
+    val targetFiles = Generator.targetFiles map (outDirectory / _)
 
-    val outDirectory = mavlinkTarget.value
+    if (targetFiles forall (_.lastModified > dialectDefinitionFile.lastModified)) {
+      targetFiles map (_.getAbsoluteFile)
+    } else {
+      val dialectDefinition = XML.loadFile(dialectDefinitionFile)
+      val dialect = (new Parser(reporter)).parseDialect(dialectDefinition)
+      val targets = (new Generator(dialect)).targets
+      for (tgt <- targets) yield {
+        val file = (outDirectory / tgt.path)
 
-    val files = for (tgt <- targets) yield {
-      val file = outDirectory / tgt.path
-
-      if (dialectDefinitionFile.lastModified > file.lastModified) {
-        streams.value.log.info("Generating mavlink binding " + file)
-        IO.write(file, tgt.generate())
+        if (dialectDefinitionFile.lastModified > file.lastModified) {
+          streams.value.log.info("Generating mavlink binding " + file)
+          IO.write(file, tgt.generate())
+        }
+        file.getAbsoluteFile
       }
-      file.getAbsoluteFile
     }
-
-    files
   }
 
 }

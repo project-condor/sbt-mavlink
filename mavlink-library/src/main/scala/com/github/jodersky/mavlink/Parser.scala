@@ -44,6 +44,7 @@ class Parser(reporter: Reporter) {
 
     case <enum>{_*}</enum> =>
       val name = (node \ "@name").map(_.text).headOption getOrElse fatal("no name defined for enum", node)
+      val description = (node \ "description").map(_.text).headOption getOrElse ""
       val entries = (node \ "entry").zipWithIndex map { case (n, i) =>
 
         //FIXME: some official MAVLink dialects don't define values in enums
@@ -59,7 +60,7 @@ class Parser(reporter: Reporter) {
           case _ => fatal("illegal definition in enum, only entries are allowed", n)
         }
       }
-      Enum(name, entries)
+      Enum(name, entries, description)
 
     case <message>{_*}</message> =>
       val id = (node \ "@id").map(_.text).headOption map { str =>

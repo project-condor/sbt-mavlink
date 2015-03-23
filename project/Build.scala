@@ -10,7 +10,7 @@ object ApplicationBuild extends Build {
     scalaVersion := "2.10.4",
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
-    version := "0.3-SNAPSHOT"
+    version := "0.4-SNAPSHOT"
   ) ++ publishSettings
 
   lazy val root = (

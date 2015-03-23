@@ -1,0 +1,14 @@
+@(__context: Context, __enums: Set[Enum])@org.mavlink.txt._header(__context)
+package org.mavlink.enums
+
+@__commentParagraphs(paragraphs:  Seq[String]) = {@paragraphs.mkString("/**\n * ", "\n * ", "\n */")}
+
+@for(__enum <- __enums) {
+@__commentParagraphs(__enum.description.grouped(100).toList)
+object @{StringUtils.Camelify(__enum.name)} {
+  @for(__entry <- __enum.entries) {
+  @__commentParagraphs(__entry.description.grouped(100).toList)
+  final val @{StringUtils.Camelify(__entry.name)}: Int = @__entry.value.toString
+  }
+}
+}

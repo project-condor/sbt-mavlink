@@ -43,9 +43,11 @@ parser.push(data)
 The concrete message implementations are generated according to the selected dialect (see section Keys).
 
 ### Types
+#### Messages
 Every message is mapped to a Scala case class, its name converted to CamelCase. The fields of
 the case class correspond to the fields defined in the dialect definition (names are converted to camelCase).
 
+#### Fields
 Field types are mapped according to the following table
 
 | Definition Type			| Scala Type            |
@@ -62,11 +64,17 @@ Field types are mapped according to the following table
 *Note that since Scala only supports signed integer types, it is up to the client to
 interpret the values of fields correctly.*
 
+#### Enums
+Enums are mapped to Scala objects, their fields defined as final vals (CamelCase) of type Int.
+
+*Note that since many MAVLink messages that use enums do not define a dependency on them in XML (no 'enum=' attribute), no type safety
+can be guaranteed when generating messages.*
+
 ## Usage
 Add the following to your plugins:
 
  ```scala
- addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.2")`
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.4")`
  ```
 
 Set a MAVLink dialect
@@ -84,9 +92,6 @@ All keys are defined in ```com.github.jodersky.mavlink.sbt.MavlinkKeys```
     task is added to ```sourceGenerators```, i.e. it is automatically called before compiling.
 
  - ```mavlinkTarget``` - [Setting] - Output directory of generated Scala sources. This should be within ```sourceManaged```.
-
-## Limitations
-  - Enums are not used, instead their corresponding integer value is substituted
 
 ## Credits
 Copyright (c) 2015 Jakob Odersky

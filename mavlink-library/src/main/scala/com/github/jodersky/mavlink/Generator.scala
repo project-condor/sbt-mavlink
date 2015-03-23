@@ -12,6 +12,7 @@ import trees._
  * @param dialect a specific MAVLink dialect for which to generate code
  */
 class Generator(dialect: Dialect) {
+  import Generator._
   
   lazy val maxPayloadLength = dialect.messages.map(_.length).max
 
@@ -30,12 +31,26 @@ class Generator(dialect: Dialect) {
   def targets: List[Target] = {
     val context = Context(dialect.version)
     List(
-      Target("org/mavlink/Assembler.scala", () => org.mavlink.txt.Assembler(context).body),
-      Target("org/mavlink/Crc.scala", () => org.mavlink.txt.Crc(context).body),
-      Target("org/mavlink/Packet.scala", () => org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body),
-      Target("org/mavlink/Parser.scala", () => org.mavlink.txt.Parser(context).body),
-      Target("org/mavlink/messages/messages.scala", () => org.mavlink.messages.txt.messages(context, dialect.messages).body)
+      Target(targetFiles(0), () => org.mavlink.txt.Assembler(context).body),
+      Target(targetFiles(1), () => org.mavlink.txt.Crc(context).body),
+      Target(targetFiles(2), () => org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body),
+      Target(targetFiles(3), () => org.mavlink.txt.Parser(context).body),
+      Target(targetFiles(4), () => org.mavlink.messages.txt.messages(context, dialect.messages).body),
+      Target(targetFiles(5), () => org.mavlink.enums.txt.enums(context, dialect.enums).body)
     )
   }
+
+}
+
+object Generator {
+
+  val targetFiles: Seq[String] = Array(
+    "org/mavlink/Assembler.scala",
+    "org/mavlink/Crc.scala",
+    "org/mavlink/Packet.scala",
+    "org/mavlink/Parser.scala",
+    "org/mavlink/messages/messages.scala",
+    "org/mavlink/enums/enums.scala"
+  )
 
 }
