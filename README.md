@@ -59,7 +59,7 @@ Field types are mapped according to the following table
 | char[]					| String                |
 | &lt;type&gt;[]			| Array[&lt;type&gt;]   |
 
-*Note that since Scala only supports unsigned integer types, it is up to the client to
+*Note that since Scala only supports signed integer types, it is up to the client to
 interpret the values of fields correctly.*
 
 ## Usage
