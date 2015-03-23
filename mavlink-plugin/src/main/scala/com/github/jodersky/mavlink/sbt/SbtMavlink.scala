@@ -38,20 +38,20 @@ object SbtMavlink extends AutoPlugin {
 
     val dialectDefinition = XML.loadFile(dialectDefinitionFile)
     val dialect = (new Parser(reporter)).parseDialect(dialectDefinition)
-    val pathToSource = (new Generator(dialect)).generate()
+    val targets = (new Generator(dialect)).targets
 
     val outDirectory = mavlinkTarget.value
 
-    streams.value.log.info("Generating mavlink files...")
+    val files = for (tgt <- targets) yield {
+      val file = outDirectory / tgt.path
 
-    val files = for ((path, source) <- pathToSource) yield {
-      val file = outDirectory / path
-      streams.value.log.info("Generating " + file)
-      IO.write(file, source)
+      if (dialectDefinitionFile.lastModified > file.lastModified) {
+        streams.value.log.info("Generating mavlink binding " + file)
+        IO.write(file, tgt.generate())
+      }
       file.getAbsoluteFile
     }
-    
-    streams.value.log.info("Done generating mavlink files")
+
     files
   }
 

@@ -21,18 +21,21 @@ class Generator(dialect: Dialect) {
   }
 
   /**
-   * Generates Scala code implementing MAVLink.
-   * @return a list containing proposed Scala file names pointing to their contents
+   * Represents a generator's target file
+   * @param path the path of the generated file
+   * @param generate contents of the generated file
    */
-  def generate(): List[(String, String)] = {
-    val context = Context(dialect.version)
+  case class Target(path: String, generate: () => String)
 
+  def targets: List[Target] = {
+    val context = Context(dialect.version)
     List(
-      "org/mavlink/Assembler.scala" -> org.mavlink.txt.Assembler(context).body,
-      "org/mavlink/Crc.scala" -> org.mavlink.txt.Crc(context).body,
-      "org/mavlink/Packet.scala" -> org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body,
-      "org/mavlink/Parser.scala" -> org.mavlink.txt.Parser(context).body,
-      "org/mavlink/messages/messages.scala" -> org.mavlink.messages.txt.messages(context, dialect.messages).body
+      Target("org/mavlink/Assembler.scala", () => org.mavlink.txt.Assembler(context).body),
+      Target("org/mavlink/Crc.scala", () => org.mavlink.txt.Crc(context).body),
+      Target("org/mavlink/Packet.scala", () => org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body),
+      Target("org/mavlink/Parser.scala", () => org.mavlink.txt.Parser(context).body),
+      Target("org/mavlink/messages/messages.scala", () => org.mavlink.messages.txt.messages(context, dialect.messages).body)
     )
   }
+
 }
