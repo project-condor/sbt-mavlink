@@ -20,7 +20,7 @@ object SbtMavlink extends AutoPlugin {
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     mavlinkDialect := baseDirectory.value / "conf" / "mavlink.xml",
-    mavlinkTarget := sourceManaged.value,
+    mavlinkTarget := (sourceManaged in Compile).value,
     mavlinkGenerate := generationTask.value,
     sourceGenerators in Compile += mavlinkGenerate.taskValue
   )
