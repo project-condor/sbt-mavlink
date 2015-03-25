@@ -41,7 +41,7 @@ object SbtMavlink extends AutoPlugin {
       targetFiles map (_.getAbsoluteFile)
     } else {
       val dialect = new Parser(reporter).parseDialect(dialectDefinitionFile)
-      val targets = new Generator(dialect).targets
+      val targets = new Generator(dialect, dialectDefinitionFile.base).targets
       for (tgt <- targets) yield {
         val file = outDirectory / tgt.path
 

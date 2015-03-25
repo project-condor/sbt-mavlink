@@ -1,5 +1,10 @@
 @(__context: Context)/*
  * MAVLink Abstraction Layer for Scala.
  *
- * This file was automatically generated.
+ * Protocol version: 1.0
+ *
+ * Dialect name:     "@__context.name"
+ * Dialect version:  @__context.version.getOrElse("<unspecified>")
+ *
+ * This file was automatically generated on @{(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new java.util.Date)}
  */

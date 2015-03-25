@@ -10,8 +10,9 @@ import trees._
 /**
  * Generates Scala code implementing the MAVLink protocol.
  * @param dialect a specific MAVLink dialect for which to generate code
+ * @param name name of the dialect
  */
-class Generator(dialect: Dialect) {
+class Generator(dialect: Dialect, name: String) {
   import Generator._
   
   lazy val maxPayloadLength = dialect.messages.map(_.length).max
@@ -29,7 +30,10 @@ class Generator(dialect: Dialect) {
   case class Target(path: String, generate: () => String)
 
   def targets: List[Target] = {
-    val context = Context(dialect.version)
+    val context = Context(
+      dialect.version,
+      name
+    )
     List(
       Target(targetFiles(0), () => org.mavlink.txt.Assembler(context).body),
       Target(targetFiles(1), () => org.mavlink.txt.Crc(context).body),
