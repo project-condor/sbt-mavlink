@@ -1,0 +1,12 @@
+@(__context: Context)@_header(__context)
+package org.mavlink
+
+/**
+ * Contains constants and utilities for the protocol level.
+ */
+object Mavlink {
+
+  /** Current protocol version. */
+  final val MavlinkVersion: Byte = 1
+	
+}

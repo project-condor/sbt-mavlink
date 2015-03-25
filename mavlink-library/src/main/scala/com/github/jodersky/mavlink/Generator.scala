@@ -33,10 +33,11 @@ class Generator(dialect: Dialect) {
     List(
       Target(targetFiles(0), () => org.mavlink.txt.Assembler(context).body),
       Target(targetFiles(1), () => org.mavlink.txt.Crc(context).body),
-      Target(targetFiles(2), () => org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body),
-      Target(targetFiles(3), () => org.mavlink.txt.Parser(context).body),
-      Target(targetFiles(4), () => org.mavlink.messages.txt.messages(context, dialect.messages).body),
-      Target(targetFiles(5), () => org.mavlink.enums.txt.enums(context, dialect.enums).body)
+      Target(targetFiles(2), () => org.mavlink.txt.Mavlink(context).body),
+      Target(targetFiles(3), () => org.mavlink.txt.Packet(context, maxPayloadLength, extraCrcs).body),
+      Target(targetFiles(4), () => org.mavlink.txt.Parser(context).body),
+      Target(targetFiles(5), () => org.mavlink.messages.txt.messages(context, dialect.messages).body),
+      Target(targetFiles(6), () => org.mavlink.enums.txt.enums(context, dialect.enums).body)
     )
   }
 
@@ -47,6 +48,7 @@ object Generator {
   val targetFiles: Seq[String] = Array(
     "org/mavlink/Assembler.scala",
     "org/mavlink/Crc.scala",
+    "org/mavlink/Mavlink.scala",
     "org/mavlink/Packet.scala",
     "org/mavlink/Parser.scala",
     "org/mavlink/messages/messages.scala",
