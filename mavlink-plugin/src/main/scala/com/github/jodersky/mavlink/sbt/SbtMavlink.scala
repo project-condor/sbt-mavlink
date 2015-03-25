@@ -10,8 +10,6 @@ import sbt._
 import sbt.Keys._
 import sbt.plugins._
 
-import scala.xml.XML
-
 object SbtMavlink extends AutoPlugin {
 
   override def trigger = allRequirements
@@ -42,11 +40,10 @@ object SbtMavlink extends AutoPlugin {
     if (targetFiles forall (_.lastModified > dialectDefinitionFile.lastModified)) {
       targetFiles map (_.getAbsoluteFile)
     } else {
-      val dialectDefinition = XML.loadFile(dialectDefinitionFile)
-      val dialect = (new Parser(reporter)).parseDialect(dialectDefinition)
-      val targets = (new Generator(dialect)).targets
+      val dialect = new Parser(reporter).parseDialect(dialectDefinitionFile)
+      val targets = new Generator(dialect).targets
       for (tgt <- targets) yield {
-        val file = (outDirectory / tgt.path)
+        val file = outDirectory / tgt.path
 
         if (dialectDefinitionFile.lastModified > file.lastModified) {
           streams.value.log.info("Generating mavlink binding " + file)

@@ -1,13 +1,15 @@
 package com.github.jodersky.mavlink
 
+import java.io.File
+
 import scala.xml.Node
 
 trait Reporter {
 
   protected def printWarning(msg: String): Unit
 
-  def fatal(error: String, node: Node) = throw new ParseError("Parse error: " + error + " at " + node)
-  def warn(warning: String, node: Node) =  printWarning("Warning: " + warning +" at " + node)
+  def fatal(message: String, node: Node, file: File) = throw new ParseError(s"Parse error: $message at $node in file ${file.getAbsolutePath}")
+  def warn(message: String, node: Node, file: File) =  printWarning(s"Parse warning: $message at ${node} in file ${file.getAbsolutePath}")
 
 }
 

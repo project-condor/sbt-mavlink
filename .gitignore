@@ -17,6 +17,9 @@ project/plugins/project/
 .cache
 .history
 
+# intellij-ide specific
+.idea
+
 # ensime
 .ensime
 
