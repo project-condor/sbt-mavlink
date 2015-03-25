@@ -61,8 +61,9 @@ Field types are mapped according to the following table
 | char[]					| String                |
 | &lt;type&gt;[]			| Array[&lt;type&gt;]   |
 
-*Note that since Scala only supports signed integer types, it is up to the client to
-interpret the values of fields correctly.*
+Remarks:
+ 1. Since Scala only supports signed integer types, it is up to the client to interpret the values of fields correctly.
+ 2. Read-only fields such as uint8_t_mavlink_version don't play well with case classes. These fields are therefore treated as writeable by the user. E.g. when creating a standard heartbeat message, the user must add the mavlink version manually.
 
 #### Enums
 Enums are mapped to Scala objects, their fields defined as final vals (CamelCase) of type Int.
@@ -74,7 +75,7 @@ can be guaranteed when generating messages.*
 Add the following to your plugins:
 
  ```scala
- addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.4.1")`
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.5.0")`
  ```
 
 Set a MAVLink dialect
