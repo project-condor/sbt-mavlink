@@ -4,7 +4,7 @@ package trees {
   
   sealed trait Tree
   
-  case class Dialect(version: String, enums: Set[Enum], messages: Set[Message]) extends Tree
+  case class Dialect(version: Option[String], enums: Set[Enum], messages: Set[Message]) extends Tree
   case class Enum(name: String, entries: Seq[EnumEntry], description: String) extends Tree
   case class EnumEntry(value: Int, name: String, description: String) extends Tree
   case class Field(tpe: Type, nativeType: String, name: String, enum: Option[String], description: String) extends Tree
