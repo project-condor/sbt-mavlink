@@ -75,12 +75,17 @@ can be guaranteed when generating messages.*
 Add the following to your plugins:
 
  ```scala
- addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.5.0")`
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.5.1")`
+ ```
+
+Enable the plugin
+ ```scala
+ enablePlugins(SbtMavlink)
  ```
 
 Set a MAVLink dialect
  ```scala
- mavlinkDialect := (baseDirectory in ThisBuild).value / "mavlink" / "dialect.xml"
+ mavlinkDialect := baseDirectory.value / "mavlink" / "dialect.xml"
  ```
 
 Compile your project.

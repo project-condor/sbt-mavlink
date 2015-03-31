@@ -12,8 +12,6 @@ import sbt.plugins._
 
 object SbtMavlink extends AutoPlugin {
 
-  override def trigger = allRequirements
-
   override def requires = JvmPlugin //this is required as sourceGenerators are otherwise reset
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
