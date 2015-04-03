@@ -58,7 +58,7 @@ import java.nio.charset.Charset
 }}
 
 @__commentParagraphs(paragraphs:  Seq[String]) = {@paragraphs.mkString("/**\n * ", "\n * ", "\n */")}
-@__comment(message: Message) = {@__commentParagraphs(message.description.grouped(100).toList ++ message.fields.map(field => "@param " + field.name + " " + field.description))}
+@__comment(message: Message) = {@__commentParagraphs(message.description.grouped(100).toList ++ message.fields.map(field => "@param " + __scalaFieldName(field) + " " + field.description))}
 
 /** Marker trait for MAVLink messages. All supported messages extend this trait. */
 sealed trait Message
