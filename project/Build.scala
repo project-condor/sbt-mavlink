@@ -7,11 +7,12 @@ import sbt.ScriptedPlugin._
 object ApplicationBuild extends Build {
 
   val common = Seq(
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.10.5",
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
-    version := "0.5.2"
-  ) ++ publishSettings
+    version := "0.5.2",
+    licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0")))
+  )
 
   lazy val root = (
     Project("root", file("."))
@@ -50,32 +51,6 @@ object ApplicationBuild extends Build {
     )
     dependsOn(library)
   )
-
-  lazy val publishSettings: Seq[Setting[_]] = Seq(
-    licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0"))),
-    homepage := Some(url("http://github.com/jodersky/sbt-mavlink")),
-    publishMavenStyle := true,
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if (isSnapshot.value)
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-    },
-    pomIncludeRepository := { _ => false },
-    pomExtra := {
-      <scm>
-        <url>git@github.com:jodersky/sbt-mavlink.git</url>
-        <connection>scm:git:git@github.com:jodersky/sbt-mavlink.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>jodersky</id>
-          <name>Jakob Odersky</name>
-        </developer>
-      </developers>
-    }
-  )
-
+  
 }
 
