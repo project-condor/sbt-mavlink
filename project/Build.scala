@@ -10,7 +10,7 @@ object ApplicationBuild extends Build {
     scalaVersion := "2.10.4",
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
-    version := "0.5.1"
+    version := "0.5.2"
   ) ++ publishSettings
 
   lazy val root = (
@@ -50,7 +50,7 @@ object ApplicationBuild extends Build {
     )
     dependsOn(library)
   )
-  
+
   lazy val publishSettings: Seq[Setting[_]] = Seq(
     licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0"))),
     homepage := Some(url("http://github.com/jodersky/sbt-mavlink")),

@@ -1,7 +1,5 @@
 package com.github.jodersky.mavlink.sbt
 
-import MavlinkKeys._
-
 import com.github.jodersky.mavlink.Generator
 import com.github.jodersky.mavlink.Parser
 import com.github.jodersky.mavlink.Reporter
@@ -13,6 +11,16 @@ import sbt.plugins._
 object SbtMavlink extends AutoPlugin {
 
   override def requires = JvmPlugin //this is required as sourceGenerators are otherwise reset
+
+  object autoImport {
+
+    lazy val mavlinkDialect = settingKey[File]("Dialect definition from which to generate files.")
+    lazy val mavlinkTarget = settingKey[File]("Target directory to contain all generated mavlink files.")
+
+    lazy val mavlinkGenerate = taskKey[Seq[File]]("Generate mavlink files.")
+
+  }
+  import autoImport._
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     mavlinkDialect := baseDirectory.value / "conf" / "mavlink.xml",

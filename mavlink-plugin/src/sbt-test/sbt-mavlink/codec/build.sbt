@@ -1,4 +1,4 @@
-import com.github.jodersky.mavlink.sbt.MavlinkKeys._
+enablePlugins(SbtMavlink)
 
 mavlinkDialect := baseDirectory.value / "mavlink.xml"
 
