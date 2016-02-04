@@ -3,6 +3,7 @@ import sbt.Keys._
 import play.twirl.sbt.SbtTwirl
 import play.twirl.sbt.Import._
 import sbt.ScriptedPlugin._
+import bintray.BintrayPlugin.autoImport._
 
 object ApplicationBuild extends Build {
 
@@ -22,7 +23,8 @@ object ApplicationBuild extends Build {
     )
     settings(
       publish := (),
-      publishLocal := ()
+      publishLocal := (),
+      publishTo := Some(Resolver.file("Unused transient repository", target.value / "unusedrepo")) // make sbt-pgp happy
     )
   )
 
@@ -47,10 +49,12 @@ object ApplicationBuild extends Build {
         Seq("-Xmx1024M", "-XX:MaxPermSize=256M", "-Dplugin.version=" + version.value)
       },
       scriptedBufferLog := false,
-      publishLocal <<= publishLocal.dependsOn(publishLocal in library)
+      publishMavenStyle := false,
+      bintrayRepository := "sbt-plugins",
+      bintrayOrganization in bintray := None
     )
     dependsOn(library)
   )
-  
+
 }
 
