@@ -75,7 +75,7 @@ can be guaranteed when generating messages.*
 Add the following to your plugins:
 
  ```scala
- addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.5.2")`
+ addSbtPlugin("com.github.jodersky" % "sbt-mavlink" % "0.6.0")`
  ```
 
 Enable the plugin

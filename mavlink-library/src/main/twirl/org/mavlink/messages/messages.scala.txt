@@ -2,6 +2,7 @@
 package org.mavlink.messages
 
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.charset.Charset
 
 @__scalaMessageType(message: Message) = {@StringUtils.Camelify(message.name)}
@@ -89,6 +90,7 @@ object Message {
    */
   def unpack(id: Byte, payload: Array[Byte]): Message = {
     val buffer = ByteBuffer.wrap(payload)
+    buffer.order(ByteOrder.LITTLE_ENDIAN)
     id match {
     @for(__msg <- __messages) {
       case @__msg.id =>
@@ -110,6 +112,7 @@ object Message {
       case m: @__scalaMessageType(__msg) =>
         val arr = new Array[Byte](@__msg.length)
         val buffer = ByteBuffer.wrap(arr)
+	buffer.order(ByteOrder.LITTLE_ENDIAN)
 
         @for(__field <- __msg.orderedFields) {@__bufferWriteMethod("buffer", "m." + __scalaFieldName(__field), __field.tpe)
         }

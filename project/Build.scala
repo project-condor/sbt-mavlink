@@ -8,10 +8,10 @@ import bintray.BintrayPlugin.autoImport._
 object ApplicationBuild extends Build {
 
   val common = Seq(
-    scalaVersion := "2.10.5",
+    scalaVersion := "2.10.6",
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
-    version := "0.5.2",
+    version := "0.6.0",
     licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0")))
   )
 
