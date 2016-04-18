@@ -18,12 +18,18 @@ package trees {
       for (field <- orderedFields) {
         c = c.accumulate((field.nativeType + " ").getBytes)
         c = c.accumulate((field.name + " ").getBytes)
+
+        field.tpe match {
+          case ArrayType(_, len) => c = c.accumulate(len.toByte)
+          case _ =>
+        }
+
       }
       (c.lsb ^ c.msb).toByte
     }
   }
   
-  trait Type extends Tree {
+  sealed trait Type extends Tree {
     def width: Int // width in bytes of the type
     def sizeof: Int = width // size of bytes of the type
   }

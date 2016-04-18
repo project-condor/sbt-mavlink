@@ -17,7 +17,9 @@ import java.nio.charset.Charset
   case FloatType(4) => {Float}
   case FloatType(8) => {Double}
   case StringType(_) => {String}
+  case CharType => {Byte}
   case ArrayType(underlying, _) => {Seq[@__scalaFieldType(underlying)]}
+  case t => {sys.error("unsupported type: " + @t)}
 }}
 @__scalaFieldFormal(field: Field) = {@__scalaFieldName(field): @__scalaFieldType(field.tpe)}
 
@@ -36,8 +38,10 @@ import java.nio.charset.Charset
       case i => i
     }
     new String(bytes, 0, length, Charset.forName("UTF-8"))
-  }}  
+  }}
+  case CharType => {@{buffer}.get()}
   case ArrayType(underlying, length) => {for (i <- 0 until @length) yield {@__bufferReadMethod(buffer, underlying)}}
+  case t => {sys.error("unsupported type: " + @t)}
 }}
 @__bufferWriteMethod(buffer: String, data: String, tpe: Type) = {@tpe match {
   case IntType(1, _) => {@{buffer}.put(@data)}
@@ -54,8 +58,10 @@ import java.nio.charset.Charset
     while (@{buffer}.position < endPosition) {
       @{buffer}.put(0: Byte)
     }
-  }}  
+  }}
+  case CharType => {@{buffer}.put(@data)}
   case ArrayType(underlying, length) => {for (i <- 0 until @length) {@__bufferWriteMethod(buffer, data + "(i)", underlying)}}
+  case t => {sys.error("unsupported type: " + @t)}
 }}
 
 @__commentParagraphs(paragraphs:  Seq[String]) = {@paragraphs.mkString("/**\n * ", "\n * ", "\n */")}

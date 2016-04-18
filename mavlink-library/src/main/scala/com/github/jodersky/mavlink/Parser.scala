@@ -131,7 +131,7 @@ class Parser(reporter: Reporter) {
     case "uint64_t" => IntType(8, false)
     case "float" => FloatType(4)
     case "double" => FloatType(8)
-    case "char" => IntType(1, true)
+    case "char" => CharType
     case ArrayPattern("char", l) => StringType(l.toInt)
     case ArrayPattern(u, l) => ArrayType(parseType(u, node, file), l.toInt)
     case unknown => fatal("unknown field type " + unknown, node, file)
