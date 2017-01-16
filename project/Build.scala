@@ -11,7 +11,7 @@ object ApplicationBuild extends Build {
     scalaVersion := "2.10.6",
     scalacOptions ++= Seq("-feature", "-deprecation"),
     organization := "com.github.jodersky",
-    version := "0.7.0",
+    version := "0.8.0",
     licenses := Seq(("LGPL", url("http://opensource.org/licenses/LGPL-3.0")))
   )
 
